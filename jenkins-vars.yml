@@ -1,0 +1,31 @@
+---
+
+# jenkins variables
+project_name: docker-immich
+external_type: github_stable
+release_type: stable
+release_tag: latest
+ig_branch: main
+repo_vars:
+  - EXT_GIT_BRANCH = 'main'
+  - EXT_USER = 'immich-app'
+  - EXT_REPO = 'immich'
+  - BUILD_VERSION_ARG = 'IMMICH_VERSION'
+  - IG_USER = 'imagegenius'
+  - IG_REPO = 'docker-immich'
+  - CONTAINER_NAME = 'immich'
+  - DOCKERHUB_IMAGE = 'imagegenius/immich'
+  - DEV_DOCKERHUB_IMAGE = 'igdev/immich'
+  - PR_DOCKERHUB_IMAGE = 'igpipepr/immich'
+  - DIST_IMAGE = 'ubuntu'
+  - MULTIARCH = 'true'
+  - CI = 'true'
+  - CI_WEB = 'true'
+  - CI_PORT = '8080'
+  - CI_SSL = 'false'
+  - CI_DELAY = '60'
+  - CI_DOCKERENV = 'TEST_RUN=true|DB_HOSTNAME=localhost|DB_USERNAME=postgres|DB_PASSWORD=password|DB_DATABASE_NAME=postgres|REDIS_HOSTNAME=localhost|JWT_SECRET=somelongrandomstring'
+  - CI_AUTH = ''
+  - CI_WEBPATH = ''
+sponsor_links:
+  - { name: "Immich", url: "https://www.buymeacoffee.com/altran1502" }
