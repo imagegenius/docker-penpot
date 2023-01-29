@@ -1,23 +1,21 @@
 ---
 
 # project information
-project_name: immich
-project_url: "https://immich.app/"
-project_logo: "https://user-images.githubusercontent.com/27055614/182044984-2ee6d1ed-c4a7-4331-8a4b-64fcde77fe1f.png"
-project_blurb: "[{{ project_name|capitalize }}]({{ project_url }}) - High performance self-hosted photo and video backup solution."
+project_name: penpot
+project_url: "https://penpot.app/"
+project_logo: "https://raw.githubusercontent.com/penpot/penpot/develop/frontend/resources/images/icons/penpot-logo.svg"
+project_blurb: "[{{ project_name|capitalize }}]({{ project_url }}) is the first Open Source design and prototyping platform meant for cross-domain teams. Non dependent on operating systems, Penpot is web based and works with open web standards (SVG). For everyone and empowered by the community."
 project_github_repo_url: "https://github.com/imagegenius/docker-{{ project_name }}"
 project_blurb_optional_extras_enabled: false
 
 # supported architectures
 available_architectures:
   - { arch: "{{ arch_x86_64 }}", tag: "amd64-latest"}
-  - { arch: "{{ arch_arm64 }}", tag: "arm64v8-latest"}
 
 # development version
 development_versions: true
 development_versions_items:
-  - { tag: "latest", desc: "Latest Immich release with an Ubuntu base." }
-  - { tag: "noml", desc: "Latest Immich release with an Alpine base. Machine-learning is completly removed. (tinnny image), use this if your CPU does not support AVX" }
+  - { tag: "latest", desc: "Latest penpot release with an Alpine base." }
 
 # container parameters
 common_param_env_vars_enabled: true
@@ -26,16 +24,9 @@ param_usage_include_net: false
 param_usage_include_env: true
 param_env_vars:
   - { env_var: "TZ", env_value: "Australia/Melbourne", desc: "Specify a timezone to use eg. Australia/Melbourne." }
-  - { env_var: "DB_HOSTNAME", env_value: "192.168.1.x", desc: "PostgreSQL Host" }
-  - { env_var: "DB_USERNAME", env_value: "postgres", desc: "PostgreSQL Username" }
-  - { env_var: "DB_PASSWORD", env_value: "postgres", desc: "PostgreSQL Password" }
-  - { env_var: "DB_DATABASE_NAME", env_value: "immich", desc: "PostgreSQL Database Name" }
-  - { env_var: "REDIS_HOSTNAME", env_value: "redis", desc: "Redis Hostname" }
-  - { env_var: "JWT_SECRET", env_value: "somelongrandomstring", desc: "Run `openssl rand -base64 128`" }
 param_usage_include_vols: true
 param_volumes:
   - { vol_path: "/config", vol_host_path: "path_to_appdata", desc: "Contains the logs" }
-  - { vol_path: "/photos", vol_host_path: "path_to_photos", desc: "Contains all the photos uploaded to Immich" }
 param_usage_include_ports: true
 param_ports:
   - { external_port: "8080", internal_port: "8080", port_desc: "WebUI Port" }
@@ -43,11 +34,7 @@ param_device_map: false
 cap_add_param: false
 
 # optional container parameters
-opt_param_usage_include_env: true
-opt_param_env_vars:
-  - { env_var: "DB_PORT", env_value: "5432", desc: "PostgreSQL Port" }
-  - { env_var: "REDIS_PORT", env_value: "6379", desc: "Redis Port" }  
-  - { env_var: "REDIS_PASSWORD", env_value: "", desc: "Redis password" }
+opt_param_usage_include_env: false
 opt_param_usage_include_vols: false
 opt_param_usage_include_ports: false
 opt_param_device_map: false
@@ -55,93 +42,14 @@ opt_cap_add_param: false
 optional_block_1: false
 
 # unraid template
-unraid_requirement: "PostgreSQL 14, Redis"
+unraid_requirement: "PostgreSQL 15, Redis"
 unraid_category: "Backup: Cloud: MediaApp:Photos"
 
 # application setup block
 app_setup_block_enabled: true
 app_setup_block: |
-  The WebUI can be found at `http://your-ip:8080`. Follow the wizard to set up Immich.
-
-  Immich requires that you have PostgreSQL 14 and Redis setup externally.
-
-  Follow these steps if you need help setting up Redis or PostgreSQL.
-
-  #### Redis:
-
-  Redis can be ran within the container using a docker-mod or you can use an external Redis server/container.
-
-  If you don't need to use Redis elsewhere add this environment variable: `DOCKER_MODS=imagegenius/mods:universal-redis`, and set `REDIS_HOSTNAME` to `localhost`.
-
-  Or within a seperate container:
-
-  ```bash
-  docker run -d \
-    --name=redis \
-    -p 6379:6379 \
-    redis
-  ```
-
-  #### PostgreSQL 14:
-
-  (A docker-mod for postgres is in the making)
-
-  ```bash
-  docker run -d \
-    --name=postgres14 \
-    -e POSTGRES_USER=postgres \
-    -e POSTGRES_PASSWORD=postgres \
-    -e POSTGRES_DB=immich \
-    -v path_to_postgres:/var/lib/postgresql/data \
-    -p 5432:5432 \
-    postgres:14
-  ```
-
-  ### Unraid: Migrate from docker-compose
-
-  **⚠️ Pre-read all these steps before doing anying, if you are confused open an issue.**
-
-  When using the official Immich docker-compose, the PostgreSQL data is stored in a docker volume which _should_ be located at `/var/lib/docker/volumes/pgdata/_data`. Before preceeding you **must** stop the docker-compose stack.
-
-  #### 1. Move the database
-
-  To move the PostgreSQL data to the unraid array run:
-
-  ```bash
-  mv /var/lib/docker/volumes/pgdata/_data /mnt/user/appdata/postgres14
-  ```
-
-  Install `postgresql14` from the Unraid CA and remove these variables from the template: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`.
-  The database is already initialised and these variables don't do anything.
-  Also set `Database Storage Path` to `/mnt/user/appdata/postgres14`.
-
-  #### 2. Move the uploads
-
-  In the docker-compose .env you would have set the `UPLOAD_LOCATION`, copy that down and use it below:
-
-  **⚠️ Note that Immich created the `uploads` folder within the `UPLOAD_LOCATION`.**
-
-  ```bash
-  mv <upload_location>/uploads /mnt/user/<elsewhere>
-  ```
-
-  #### 3. Setup the `imagegenius/immich` container
-
-  Search the unraid CA for `immich`, choose either `CorneliousJD`'s or `vcxpz`'s templates (`vcxpz` is the official imagegenius template).
-
-  **⚠️ You must configure the template to the values listed in the docker-compose .env**
-
-  Ensure that the template matches the `DB_USERNAME`, `DB_PASSWORD`, `DB_DATABASE_NAME` and `JWT_SECRET` from the .env. Set `Path: /photos` to `/mnt/user/<elsewhere>`.
-
-  Click Apply, Open the WebUI and login. Everything _Should_ be as it was.
-
+  nothing to see here, under development
 
 # changelog
 changelogs:
-  - { date: "26.01.23:", desc: "add unraid migration to readme" }
-  - { date: "26.01.23:", desc: "use find to apply chown to /app, excluding node_modules" }
-  - { date: "26.01.23:", desc: "enable ci testing" }
-  - { date: "24.01.23:", desc: "fix services starting prematurely, causing permission errors." }
-  - { date: "23.01.23:", desc: "add noml image to readme and add aarch64 image to readme, make github release stable" }
-  - { date: "21.01.23:", desc: "BREAKING: Redis is removed. Update missing param_env_vars & opt_param_env_vars for redis & postgres" }
   - { date: "02.01.23:", desc: "Initial Release." }
